@@ -1,0 +1,758 @@
+openapi: 3.0.0
+info:
+  version: '2'
+  title: DDDLAB API
+  contact:
+    name: DDDLAB API Support
+    email: koupy@canlab.cz
+    url: https://canlab.cz/en/DDDLAB_API
+servers:
+  - url: https://tachograph.online
+paths:
+  /api/v2/upload_files:
+    post:
+      summary: To upload files
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Simple text response -- name of uploaded file
+  /api/v2/preview:
+    post:
+      summary: To get preview
+      parameters:
+        - name: file
+          in: query
+          description: File to preview
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Preview of file send as parametr
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Preview'
+        default:
+          description: Unexpected error
+  /api/v2/analysis:
+    post:
+      summary: Infringement analysis
+      parameters:
+        - name: cardid
+          in: query
+          description: ID of evalueted card -- from preview
+          required: true
+          schema:
+            type: string
+        - name: pbegin
+          in: query
+          description: Period begin
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: pend
+          in: query
+          description: Period end
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: sumdaily
+          in: query
+          description: get summary export daily
+          required: true
+          schema:
+            type: boolean
+        - name: sumweekly
+          in: query
+          description: get summary export weekly
+          required: true
+          schema:
+            type: boolean
+        - name: summonthly
+          in: query
+          description: get summary export monthly
+          required: true
+          schema:
+            type: boolean
+        - name: workshifts
+          in: query
+          description: get workshifts export
+          required: true
+          schema:
+            type: boolean
+        - name: rests
+          in: query
+          description: get rests export
+          required: true
+          schema:
+            type: boolean
+        - name: activities
+          in: query
+          description: get activities export
+          required: true
+          schema:
+            type: boolean
+        - name: file
+          in: query
+          description: Uploaded file
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: >-
+            Based on preview you can analyze uploaded files and get infringement
+            , rest, workshift analysis
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Analysis'
+        default:
+          description: Unexpected error
+  /api/v2/ddd2html:
+    post:
+      summary: Convert DDD to HTML
+      parameters:
+        - name: file
+          in: query
+          description: Uploaded file for conversion
+          required: true
+          schema:
+            type: string
+        - name: local
+          in: query
+          description: HTML localization (cs/en)
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Converted DDD to HTML with graphics and pretty formatting .html
+          content:
+            html:
+              schema:
+                $ref: '#/components/schemas/convertedHtml'
+        default:
+          description: Unexpected error
+  /api/v2/ddd2xml:
+    post:
+      summary: Convert DDD file to XML or JSON
+      parameters:
+        - name: file
+          in: query
+          description: Uploaded file for conversion
+          required: true
+          schema:
+            type: string
+        - name: format
+          in: query
+          description: format of response (json/xml)
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: return json or xml based query parametrs
+          content: 
+            application/json: 
+              schema:
+                $ref: '#/components/schemas/convertedJSON'
+            'application/xml': {}  
+        default:
+          description: Unexpected error
+components:
+  schemas:
+    Preview:
+      type: object
+      properties:
+        status: 
+          type: string
+          example: 200
+        timestamp_utc: 
+          type: string
+          example: 2022-03-26T10:42:09.887228
+        version: 
+          type: string
+          example: DEVELOP f501a80
+        data: 
+          type: object
+          properties: 
+            code: 
+              type: string
+              example: 0
+            equipment_type: 
+              type: string
+              example: 1
+            cards: 
+              type: array
+              items: 
+                type: object
+                properties: 
+                  id: 
+                    type: string
+                    example: 00000000044I70
+                  firstnames: 
+                    type: string
+                    example: Bohumil
+                  surname: 
+                    type: string
+                    example: Novak
+                  birthday: 
+                    type: string
+                    format: date
+                    example: 1953-02-05
+                  prefered_language: 
+                    type: string
+                    example: cs
+                  driving_licence: 
+                    type: object
+                    properties: 
+                      number: 
+                        type: string
+                        example: 
+                      authority: 
+                        type: string
+                        example: 
+                      nation: 
+                        type: string
+                        example: 0
+                  last_download: 
+                    type: string
+                    example: not-a-date-time
+                  issuing_authority_name: 
+                    type: string
+                    example: Ministerstvo dopravy Ceske republiky
+                  issue_date: 
+                    type: string
+                    format: date
+                    example: 2012-05-02
+                  validity_begin: 
+                    type: string
+                    format: date
+                    example: 2012-04-25
+                  expiry_date: 
+                    type: string
+                    format: date
+                    example: 2017-04-25
+                  periods: 
+                    type: array
+                    items: 
+                      type: object
+                      properties: 
+                        begin: 
+                          type: string
+                          example: 2016-08-04T00:00:00
+                        end: 
+                          type: string
+                          example: 2017-02-24T10:53:00
+            files: 
+              type: array
+              items: 
+                type: object
+                properties: 
+                  filename: 
+                    type: string
+                    example: C_20170224_1053_B_Novak_00000000044I70.ddd
+                  blocks: 
+                    type: array
+                    items: 
+                      type: object
+                      properties: 
+                        fid: 
+                          type: string
+                          example: 2
+                        signature: 
+                          type: string
+                          example: 0
+      
+    Analysis:
+      type: object
+      properties:
+        status: 
+          type: string
+          example: 200
+        timestamp_utc: 
+          type: string
+          example: 2022-03-29T11:42:44.399736
+        version: 
+          type: string
+          example: DEVELOP f501a80
+        data: 
+          type: object
+          properties: 
+            code: 
+              type: string
+              example: 0
+            equipment_type: 
+              type: string
+              example: 1
+            card: 
+              type: object
+              properties: 
+                id: 
+                  type: string
+                  example: 00000000044I70
+                firstnames: 
+                  type: string
+                  example: Pavel
+                surname: 
+                  type: string
+                  example: Novak
+                birthday: 
+                  type: string
+                  format: date
+                  example: 1968-08-14
+                prefered_language: 
+                  type: string
+                  example: cs
+                driving_licence: 
+                  type: object
+                  properties: 
+                    number: 
+                      type: string
+                      example: 
+                    authority: 
+                      type: string
+                      example: 
+                    nation: 
+                      type: string
+                      example: 0
+                last_download: 
+                  type: string
+                  example: not-a-date-time
+                issuing_authority_name: 
+                  type: string
+                  example: Ministerstvo dopravy Ceske republik
+                issue_date: 
+                  type: string
+                  format: date
+                  example: 2013-02-13
+                validity_begin: 
+                  type: string
+                  format: date
+                  example: 2013-02-11
+                expiry_date: 
+                  type: string
+                  format: date
+                  example: 2018-01-31
+            rule_sets: 
+              type: array
+              items: 
+                type: object
+                properties: 
+                  id: 
+                    type: string
+                    example: Analysis by Directive (EC) 15/2002 Analysis by Regulation (EC) 561/2006
+                  infringements: 
+                    type: array
+                    items: 
+                      type: object
+                      properties: 
+                        date: 
+                          type: string
+                          format: date-time
+                          example: 2016-06-06T06:42:00+02:00
+                        type: 
+                          type: string
+                          example: 1005
+                        severity: 
+                          type: string
+                          example: 1
+                        rule_id: 
+                          type: string
+                          example: Rule_561_2006_8_2_Shortage
+                        begin: 
+                          type: string
+                          format: date-time
+                          example: 2016-06-05T18:34:00+02:00
+                        end: 
+                          type: string
+                          format: date-time
+                          example: 2016-06-06T14:40:00+02:00
+                        allowed: 
+                          type: object
+                          properties: 
+                            semantic: 
+                              type: string
+                              example: 1
+                            type: 
+                              type: string
+                              example: 2
+                            value: 
+                              type: string
+                              example: 09:00:00
+                        measured: 
+                          type: object
+                          properties: 
+                            semantic: 
+                              type: string
+                              example: 1
+                            type: 
+                              type: string
+                              example: 2
+                            value: 
+                              type: string
+                              example: 07:58:00
+                  workshifts: 
+                    type: array
+                    items: 
+                      type: object
+                      properties: 
+                        begin: 
+                          type: string
+                          format: date-time
+                          example: 2016-06-05T18:34:00+02:00
+                        end: 
+                          type: string
+                          format: date-time
+                          example: 2016-06-06T06:42:00+02:00
+                        duration: 
+                          type: string
+                          example: 12:08:00
+                        times: 
+                          type: object
+                          properties: 
+                            driving: 
+                              type: string
+                              example: 04:49:00
+                            work: 
+                              type: string
+                              example: 00:01:00
+                            standby: 
+                              type: string
+                              example: 00:00:00
+                            break: 
+                              type: string
+                              example: 07:18:00
+                            unknown: 
+                              type: string
+                              example: 00:00:00
+                            workshift_total: 
+                              type: string
+                              example: 09:57:00
+                            workshift_night: 
+                              type: string
+                              example: 07:19:00
+                            workshift_safety_breaks: 
+                              type: string
+                              example: 04:34:00
+                            workshift_short_breaks: 
+                              type: string
+                              example: 00:33:00
+                            workshift_excluded: 
+                              type: string
+                              example: 02:11:00
+                            worked_total: 
+                              type: string
+                              example: 05:35:00
+                            worked_night: 
+                              type: string
+                              example: 03:20:00
+                            worked_safety_breaks: 
+                              type: string
+                              example: 00:45:00
+                            rest: 
+                              type: object
+                              properties: 
+                                rest_time: 
+                                  type: string
+                                  example: 07:58:00
+                                daily_rest_time: 
+                                  type: string
+                                  example: 07:58:00
+                                daily_type: 
+                                  type: string
+                                  example: 13
+                                weekly_type: 
+                                  type: string
+                                  example: 0
+                        infringements: 
+                          type: array
+                          items: 
+                            type: object
+                            properties: 
+                              date: 
+                                type: string
+                                format: date-time
+                                example: 2016-06-06T06:42:00+02:00
+                              type: 
+                                type: string
+                                example: 1005
+                              severity: 
+                                type: string
+                                example: 1
+                              rule_id: 
+                                type: string
+                                example: Rule_561_2006_8_2_Shortage
+                              begin: 
+                                type: string
+                                format: date-time
+                                example: 2016-06-05T18:34:00+02:00
+                              end: 
+                                type: string
+                                format: date-time
+                                example: 2016-06-06T14:40:00+02:00
+                              allowed: 
+                                type: object
+                                properties: 
+                                  semantic: 
+                                    type: string
+                                    example: 1
+                                  type: 
+                                    type: string
+                                    example: 2
+                                  value: 
+                                    type: string
+                                    example: 09:00:00
+                              measured: 
+                                type: object
+                                properties: 
+                                  semantic: 
+                                    type: string
+                                    example: 1
+                                  type: 
+                                    type: string
+                                    example: 2
+                                  value: 
+                                    type: string
+                                    example: 07:58:00
+                  rests: 
+                    type: array
+                    items: 
+                      type: object
+                      properties: 
+                        begin: 
+                          type: string
+                          format: date-time
+                          example: 2016-06-06T06:42:00+02:00
+                        end: 
+                          type: string
+                          format: date-time
+                          example: 2016-06-06T14:39:59+02:00
+                        rest_time: 
+                          type: string
+                          example: 07:58:00
+                  activities: 
+                    type: array
+                    items: 
+                      type: object
+                      properties: 
+                        row_type: 
+                          type: string
+                          example: dayline
+                        begin: 
+                          type: string
+                          format: date-time
+                          example: 2016-06-05T00:00:00+02:00
+                  summary_daily: 
+                    type: array
+                    items: 
+                      type: object
+                      properties: 
+                        date: 
+                          type: string
+                          example: 2016-Jun-06
+                        driving: 
+                          type: string
+                          example: 04:49:00
+                        work: 
+                          type: string
+                          example: 00:01:00
+                        standby: 
+                          type: string
+                          example: 00:00:00
+                        break: 
+                          type: string
+                          example: 07:18:00
+                        unknown: 
+                          type: string
+                          example: 00:00:00
+                        working_time: 
+                          type: string
+                          example: 05:35:00
+                        night_working_time: 
+                          type: string
+                          example: 07:19:00
+                        duration: 
+                          type: string
+                          example: 12:08:00
+                  summary_weekly: 
+                    type: array
+                    items: 
+                      type: object
+                      properties: 
+                        date: 
+                          type: string
+                          example: 2016-Jun-06
+                        driving: 
+                          type: string
+                          example: 30:20:00
+                        work: 
+                          type: string
+                          example: 00:56:00
+                        standby: 
+                          type: string
+                          example: 00:00:00
+                        break: 
+                          type: string
+                          example: 40:57:00
+                        unknown: 
+                          type: string
+                          example: 00:00:00
+                        working_time: 
+                          type: string
+                          example: 34:16:00
+                        night_working_time: 
+                          type: string
+                          example: 19:14:00
+                        duration: 
+                          type: string
+                          example: 72:13:00
+                  summary_monthly: 
+                    type: array
+                    items: 
+                      type: object
+                      properties: 
+                        date: 
+                          type: string
+                          example: 2016-Jun-01
+                        driving: 
+                          type: string
+                          example: 103:53:00
+                        work: 
+                          type: string
+                          example: 03:34:00
+                        standby: 
+                          type: string
+                          example: 00:00:00
+                        break: 
+                          type: string
+                          example: 121:29:00
+                        unknown: 
+                          type: string
+                          example: 00:00:00
+                        working_time: 
+                          type: string
+                          example: 117:12:00
+                        night_working_time: 
+                          type: string
+                          example: 46:57:00
+                        duration: 
+                          type: string
+                          example: 228:56:00
+      
+    convertedHtml:
+      type: string
+      example: '<html xmlns:xs="http://www.w3.org/2001/XMLSchema">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head>
+<body>
+  <h3 id="ddd_title">Obsah "Karta řidiče" (Generace 1)</h3>
+  <ul id="ddd_main">
+</body>
+</html>'
+    convertedJSON:
+      type: object
+      properties:
+        Type: 
+          type: string
+          example: MainFile
+        Filename: 
+          type: string
+          example: C_20170303_1649_P_Patava_0000000001MZR0.ddd
+        EquipmentType: 
+          type: string
+          example: 0x01
+        Format: 
+          type: string
+          example: 0x00
+        LibraryVersion: 
+          type: string
+          example: 0.0.0 [dddlab_api] (DEVELOP )
+        Status: 
+          type: string
+          example: 0x00
+        Blocks: 
+          type: array
+          items: 
+            type: object
+            properties: 
+              Type: 
+                type: string
+                example: CardIccIdentification
+              FID: 
+                type: string
+                example: 0x02
+              Signature: 
+                type: string
+                example: 0x00
+              ClockStop: 
+                type: string
+                example: 0x00
+              CardExtendedSerialNumber: 
+                type: object
+                properties: 
+                  SerialNumber: 
+                    type: string
+                    example: 5169
+                  MonthYear: 
+                    type: string
+                    example: 0213
+                  Type: 
+                    type: string
+                    example: 0x01
+                  ManufacturerCode: 
+                    type: string
+                    example: 0x88
+              CardApprovalNumber: 
+                type: string
+                example: 
+              CardPersonaliserID: 
+                type: string
+                example: 0x88
+              EmbedderIcAssemblerId: 
+                type: object
+                properties: 
+                  CountryCode: 
+                    type: string
+                    example: 
+                  ModuleEmbedder: 
+                    type: string
+                    example: 0000
+                  ManufacturerInformation: 
+                    type: string
+                    example: 00
+              IcIdentifier: 
+                type: string
+                example: 1537
+      
+    Error:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: integer
+          format: int32
+        message:
+          type: string
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+security:
+  - bearerAuth: []
